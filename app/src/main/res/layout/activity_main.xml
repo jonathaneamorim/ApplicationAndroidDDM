@@ -7,15 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="212dp"
-        android:layout_height="71dp"
-        android:rotation="0"
-        android:rotationX="0"
-        android:rotationY="0"
-        android:text="@string/Hello"
-        android:textSize="20sp"
-        tools:layout_editor_absoluteX="99dp"
-        tools:layout_editor_absoluteY="330dp" />
+    <TextView
+        android:id="@+id/hello"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hello"
+        tools:layout_editor_absoluteX="176dp"
+        tools:layout_editor_absoluteY="356dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
