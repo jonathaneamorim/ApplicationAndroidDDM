@@ -1,27 +1,30 @@
 package com.example.myapplication;
 
-import android.location.LocationManager;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
+import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    PackageManager pm;
+    ListView listView;
+    List<ApplicationInfo> apps;
+    AppAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        listView = findViewById(R.id.listView);
+        pm = getPackageManager(); // Recupera gerenciador de pacotes
+        apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+
+        adapter = new AppAdapter(this, apps, pm);
+        listView.setAdapter(adapter);
     }
 }
