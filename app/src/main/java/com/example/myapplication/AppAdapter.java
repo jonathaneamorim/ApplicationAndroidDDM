@@ -15,11 +15,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
     private final Context context;
     private final PackageManager pm;
+
     public AppAdapter(@NonNull Context context, @NonNull List<ApplicationInfo> apps, PackageManager pm) {
         super(context, 0, apps);
         this.context = context;
@@ -28,6 +30,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
         if(convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.app, parent, false);
         }
@@ -41,9 +44,9 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
         icon.setImageDrawable(app.loadIcon(pm));
 
         convertView.setOnClickListener(v -> {
-            Intent intent = pm.getLaunchIntentForPackage(app.packageName);
-            if(intent != null)
-                context.startActivity(intent);
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(app.packageName);
+            if(launchIntent != null)
+                context.startActivity(launchIntent);
         });
 
         return convertView;

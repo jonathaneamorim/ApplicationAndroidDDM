@@ -1,7 +1,9 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,19 +14,39 @@ public class MainActivity extends AppCompatActivity {
 
     PackageManager pm;
     ListView listView;
-    List<ApplicationInfo> apps;
+    ArrayList<ApplicationInfo> apps = new ArrayList<>();
     AppAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         listView = findViewById(R.id.listView);
-        pm = getPackageManager(); // Recupera gerenciador de pacotes
-        apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+        pm = getPackageManager();
+
+        Intent iquery = new Intent(Intent.ACTION_MAIN, null);
+
+        iquery.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        List<ResolveInfo> listResolveInfo = pm.queryIntentActivities(iquery, PackageManager.GET_META_DATA);
+
+        for(ResolveInfo resolveInfo : listResolveInfo)
+            apps.add(resolveInfo.activityInfo.applicationInfo);
 
         adapter = new AppAdapter(this, apps, pm);
+
         listView.setAdapter(adapter);
+
+
+        /*
+          listView.setOnClickListener((parent, view, position, id) -> {
+            ApplicationInfo applicationInfo = (ApplicationInfo) parent.getItemAtPosition(position);
+            Intent launchIntent = pm.getLaunchIntentForPackage(applicationInfo.packageName);
+            if(launchIntent != null) {
+                startActivity(launchIntent);
+            }
+           }
+        );
+        */
     }
 }
