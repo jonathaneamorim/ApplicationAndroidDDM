@@ -8,74 +8,130 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.util.ArrayList;
 
 public class SimplePaint extends View {
 
-    Paint mPaint;
-    Path mPath;
-
-    public void setup() {
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(10);
-        mPaint.setColor(Color.BLACK);
-        mPath = new Path();
+    public enum ShapeType {
+        FREE_DRAW, LINE, RECTANGLE, CIRCLE
     }
 
-    public SimplePaint(Context context) {
-        super(context);
-        setup();
+    private ShapeType currentShape = ShapeType.FREE_DRAW;
+    private Paint paint;
+    private int currentColor = Color.BLACK;
+    private float startX, startY;
+    private Path currentPath;
+
+    private final ArrayList<DrawnShape> shapes = new ArrayList<>();
+
+    private static class DrawnShape {
+        ShapeType type;
+        Path path;
+        float startX, startY, endX, endY;
+        int color;
+
+        DrawnShape(ShapeType type, Path path, float startX, float startY, float endX, float endY, int color) {
+            this.type = type;
+            this.path = path;
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = endX;
+            this.endY = endY;
+            this.color = color;
+        }
     }
 
-    public SimplePaint(Context context, @Nullable AttributeSet attrs) {
+    public SimplePaint(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setup();
+        paint = new Paint();
+        paint.setColor(currentColor);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(8f);
+        paint.setAntiAlias(true);
     }
 
-    public SimplePaint(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        setup();
+    public void setShapeType(ShapeType shapeType) {
+        this.currentShape = shapeType;
     }
 
-    public SimplePaint(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        setup();
+    public void setCurrentColor(int color) {
+        this.currentColor = color;
+    }
+
+    public void clearCanvas() {
+        shapes.clear();
+        invalidate();
     }
 
     @Override
-    protected void onDraw(@NonNull Canvas canvas) {
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(mPath, mPaint);
 
-        //
-        canvas.save();
+        for (DrawnShape shape : shapes) {
+
+            paint.setColor(shape.color);
+            switch (shape.type) {
+                case FREE_DRAW:
+                    canvas.drawPath(shape.path, paint);
+                    break;
+                case LINE:
+                    canvas.drawLine(shape.startX, shape.startY, shape.endX, shape.endY, paint);
+                    break;
+                case RECTANGLE:
+                    canvas.drawRect(shape.startX, shape.startY, shape.endX, shape.endY, paint);
+                    break;
+                case CIRCLE:
+                    float radius = (float) Math.hypot(shape.endX - shape.startX, shape.endY - shape.startY);
+                    canvas.drawCircle(shape.startX, shape.startY, radius, paint);
+                    break;
+            }
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mPath.moveTo(event.getX(), event.getY());
-                return true;
+                startX = x;
+                startY = y;
+
+                if (currentShape == ShapeType.FREE_DRAW) {
+                    currentPath = new Path();
+                    currentPath.moveTo(x, y);
+                }
+                break;
+
             case MotionEvent.ACTION_MOVE:
-                mPath.lineTo(event.getX(), event.getY());
+                if (currentShape == ShapeType.FREE_DRAW && currentPath != null) {
+                    currentPath.lineTo(x, y);
+                    shapes.add(new DrawnShape(ShapeType.FREE_DRAW, new Path(currentPath),
+                            0, 0, 0, 0, currentColor));
+                }
+                invalidate();
                 break;
+
             case MotionEvent.ACTION_UP:
+                Path path = null;
+                switch (currentShape) {
+                    case FREE_DRAW:
+                        break;
+                    case LINE:
+                        shapes.add(new DrawnShape(ShapeType.LINE, null, startX, startY, x, y, currentColor));
+                        break;
+                    case RECTANGLE:
+                        shapes.add(new DrawnShape(ShapeType.RECTANGLE, null, startX, startY, x, y, currentColor));
+                        break;
+                    case CIRCLE:
+                        shapes.add(new DrawnShape(ShapeType.CIRCLE, null, startX, startY, x, y, currentColor));
+                        break;
+                }
+                invalidate();
                 break;
-            default:
-                return false;
         }
 
-        invalidate();
-
-        return super.onTouchEvent(event);
-    }
-
-    public void setColor(int color) {
-        mPaint.setColor(color);
+        return true;
     }
 }
