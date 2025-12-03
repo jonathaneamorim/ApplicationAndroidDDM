@@ -28,21 +28,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         Fragment fragment;
-        switch (v.getId()){
-            case (R.id.buttonFa):
-                fragment = new FragmentA();
-                break;
 
-            case (R.id.buttonFb):
-                fragment = new FragmentB();
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + v.getId());
+        if(v.getId()==R.id.buttonFa) {
+            fragment = new FragmentA();
+        } else {
+            fragment = new FragmentB();
         }
 
-
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.frameConteudo, fragment);
+        fragmentTransaction.replace(R.id.frameConteudo, fragment);
         fragmentTransaction.commit();
     }
 }
